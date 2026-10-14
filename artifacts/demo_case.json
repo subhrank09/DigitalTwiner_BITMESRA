@@ -1,0 +1,16 @@
+{
+  "demo_patient": "P0030",
+  "demo_index": 3037,
+  "whatif_baseline": {
+    "mean": 143.90705128205127,
+    "peak_daily_avg": 230.6153846153846,
+    "time_above_180_pct": 12.873931623931622,
+    "time_in_range_pct": 87.12606837606837
+  },
+  "whatif_intervention": {
+    "mean": 138.9917200854701,
+    "peak_daily_avg": 204.84615384615384,
+    "time_above_180_pct": 6.089743589743589,
+    "time_in_range_pct": 93.91025641025641
+  }
+}

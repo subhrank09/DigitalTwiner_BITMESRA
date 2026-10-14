@@ -1,0 +1,184 @@
+{
+  "n_rows": {
+    "train": 92886,
+    "val": 19464,
+    "test": 18834
+  },
+  "n_patients": {
+    "train": 105,
+    "val": 22,
+    "test": 23
+  },
+  "prevalence_test": 0.19326749495593076,
+  "ablation": {
+    "EHR only": {
+      "auroc": 0.6910233507442932,
+      "auprc": 0.2983604035358404,
+      "brier": 0.14552706709734803,
+      "threshold": 0.11999999999999998,
+      "sensitivity": 0.9892857142857143,
+      "specificity": 0.14209556403843623,
+      "precision": 0.21645828324116373,
+      "tp": 3601,
+      "fp": 13035,
+      "fn": 39,
+      "tn": 2159
+    },
+    "CGM only": {
+      "auroc": 0.9475543773062529,
+      "auprc": 0.7990440985260344,
+      "brier": 0.07111801768289147,
+      "threshold": 0.25999999999999995,
+      "sensitivity": 0.8892857142857142,
+      "specificity": 0.8681058312491773,
+      "precision": 0.6176302232398397,
+      "tp": 3237,
+      "fp": 2004,
+      "fn": 403,
+      "tn": 13190
+    },
+    "Wearables only (no EHR)": {
+      "auroc": 0.9478169701168911,
+      "auprc": 0.8018866318745744,
+      "brier": 0.07086662945138437,
+      "threshold": 0.25999999999999995,
+      "sensitivity": 0.8881868131868131,
+      "specificity": 0.8722522048176912,
+      "precision": 0.6248550444530344,
+      "tp": 3233,
+      "fp": 1941,
+      "fn": 407,
+      "tn": 13253
+    },
+    "Fused EHR + wearables (GlucoTwin)": {
+      "auroc": 0.9477474570644571,
+      "auprc": 0.8013390415718364,
+      "brier": 0.07127376607912458,
+      "threshold": 0.31999999999999995,
+      "sensitivity": 0.8752747252747253,
+      "specificity": 0.8779781492694485,
+      "precision": 0.6321428571428571,
+      "tp": 3186,
+      "fp": 1854,
+      "fn": 454,
+      "tn": 13340
+    }
+  },
+  "cold_start_ablation": {
+    "Cold start: wearables only": {
+      "auroc": 0.9416377940540438,
+      "auprc": 0.7745175211216155,
+      "brier": 0.07562168413360161,
+      "threshold": 0.29,
+      "sensitivity": 0.8543956043956044,
+      "specificity": 0.8800184283269712,
+      "precision": 0.6304480032434624,
+      "tp": 3110,
+      "fp": 1823,
+      "fn": 530,
+      "tn": 13371
+    },
+    "Cold start: wearables + EHR (fused)": {
+      "auroc": 0.9478237324739234,
+      "auprc": 0.8017327879363763,
+      "brier": 0.07176397241406975,
+      "threshold": 0.24999999999999994,
+      "sensitivity": 0.9112637362637362,
+      "specificity": 0.8463867316045808,
+      "precision": 0.5869757565032737,
+      "tp": 3317,
+      "fp": 2334,
+      "fn": 323,
+      "tn": 12860
+    }
+  },
+  "baseline_rule": {
+    "description": "alert if glucose > 140 mg/dL and rising > 10 mg/dL per 30 min",
+    "sensitivity": 0.08241758241758242,
+    "specificity": 0.9649203633013032,
+    "precision": 0.36014405762304924
+  },
+  "baseline_logreg_current_glucose": {
+    "auroc": 0.6080577461895745,
+    "auprc": 0.26044402701208036,
+    "brier": 0.15326811591316242,
+    "threshold": 0.12999999999999998,
+    "sensitivity": 0.862912087912088,
+    "specificity": 0.24279320784520206,
+    "precision": 0.21446128635804998,
+    "tp": 3141,
+    "fp": 11505,
+    "fn": 499,
+    "tn": 3689
+  },
+  "regression": {
+    "peak_mae_mgdl": 11.497347504857768
+  },
+  "alerts": {
+    "alerts_per_patient_day": 5.815402254920695,
+    "episodes": 521,
+    "episodes_warned_in_advance": 510,
+    "episode_recall": 0.9788867562380038,
+    "cooldown_min": 60
+  },
+  "dataset": {
+    "patients": 150,
+    "days": 14,
+    "rows": 171600,
+    "eligible_rows": 131184,
+    "prevalence_eligible": 0.1677033784607879,
+    "time_above_180_pct": 10.450396825396826
+  },
+  "group_importance": {
+    "CGM history": 0.17325083682043474,
+    "Time of day": 0.11949145396843878,
+    "Activity": 0.005547936171781398,
+    "Sleep": 0.0023376640287606034,
+    "HRV / stress": 0.0016428546984573744,
+    "EHR (static)": 0.0012267320021520274
+  },
+  "repeated_splits": {
+    "EHR only": {
+      "auroc_mean": 0.6740908288176476,
+      "auroc_std": 0.013536827825986579,
+      "auprc_mean": 0.27946435452162627,
+      "auprc_std": 0.0149733758723003,
+      "n_splits": 3
+    },
+    "CGM only": {
+      "auroc_mean": 0.9420625534381464,
+      "auroc_std": 0.004050001087607571,
+      "auprc_mean": 0.7706050983779256,
+      "auprc_std": 0.022360042507292958,
+      "n_splits": 3
+    },
+    "Wearables only (no EHR)": {
+      "auroc_mean": 0.9420359774766744,
+      "auroc_std": 0.004212540180799994,
+      "auprc_mean": 0.7694567664295645,
+      "auprc_std": 0.023970040918132502,
+      "n_splits": 3
+    },
+    "Fused EHR + wearables (GlucoTwin)": {
+      "auroc_mean": 0.9418566561404004,
+      "auroc_std": 0.004505188430882207,
+      "auprc_mean": 0.7695773489640154,
+      "auprc_std": 0.024117198063335288,
+      "n_splits": 3
+    },
+    "Cold start: wearables only": {
+      "auroc_mean": 0.934373338837156,
+      "auroc_std": 0.006175320840949298,
+      "auprc_mean": 0.7388449668562709,
+      "auprc_std": 0.029894880094992755,
+      "n_splits": 3
+    },
+    "Cold start: wearables + EHR (fused)": {
+      "auroc_mean": 0.9392176950702192,
+      "auroc_std": 0.006439970222303497,
+      "auprc_mean": 0.7621838932866415,
+      "auprc_std": 0.029556220568273013,
+      "n_splits": 3
+    }
+  }
+}
