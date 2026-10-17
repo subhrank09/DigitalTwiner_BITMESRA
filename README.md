@@ -11,7 +11,6 @@
 | Team leader | Rohan Kumar, rohankumar18181818@gmail.com |
 | Members (1-4) | Subhrank Priya, B.Tech, Final Year |
 
-*(Folder / repo name format required by the organisers: `TeamName_CollegeName`, here `DigitalTwiner_BITMESRA`.)*
 
 ## 2. Project title
 **GlucoTwin: fusing EHR and wearable/CGM streams in a virtual patient that warns of glucose excursions 2 hours ahead.**
