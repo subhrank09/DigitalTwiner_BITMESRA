@@ -73,3 +73,13 @@ def test_train_forecast_and_explain():
     assert set(fc.drivers) == {"EHR (static)", "CGM history", "Activity", "HRV / stress", "Sleep", "Time of day"}
     wi = twin.what_if({"post_meal_walk": True})
     assert wi["intervention"]["mean"] <= wi["baseline"]["mean"]
+
+def test_twin_calibration_runs():
+    from glucotwin.synthetic import generate_cohort
+    from glucotwin.twin import VirtualPatient
+    ehr, ts, _ = generate_cohort(2, 6, 1)
+    r = ehr.iloc[0]
+    vp = VirtualPatient(r, ts[ts.patient_id == r["patient_id"]], None, sim_seed=1000)
+    res = vp.calibrate_ir(days=3, grid=[0.5, 0.8, 1.1], n_rep=1)
+    assert res["ir_est"] in (0.5, 0.8, 1.1)
+    assert "ir_used" in vp.what_if({"post_meal_walk": True}, n_days=6)

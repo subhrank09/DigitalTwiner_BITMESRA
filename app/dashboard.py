@@ -20,6 +20,8 @@ sys.path.insert(0, str(ROOT))
 from glucotwin.plots import RISK_COLOR, plot_cgm_forecast, plot_drivers, plot_vitals, plot_whatif
 from glucotwin.twin import VirtualPatient
 
+CAL_DAYS = 5   # days of CGM used to estimate insulin resistance
+
 st.set_page_config(page_title="GlucoTwin", page_icon="🩺", layout="wide")
 
 
@@ -29,6 +31,13 @@ def load():
     series = pd.read_csv(ROOT / "data" / "synthetic" / "wearables_5min.csv.gz", parse_dates=["ts"])
     model = joblib.load(ROOT / "artifacts" / "glucoforecaster.joblib")
     return ehr, series, model
+
+
+@st.cache_data(show_spinner="Calibrating twin from first 5 days of CGM...")
+def calibrated_ir(pid: str, _row, _ts) -> float:
+    """Estimate insulin resistance once per patient (cached by patient id)."""
+    vp = VirtualPatient(_row, _ts, None, sim_seed=None)
+    return vp.calibrate_ir(days=CAL_DAYS)["ir_est"]
 
 
 try:
@@ -55,6 +64,12 @@ with st.sidebar:
     st.write(f"eGFR {int(row['egfr'])} · LDL {int(row['ldl'])} · SBP {int(row['sbp'])}")
 
 twin = VirtualPatient(row, ts, model, sim_seed=42 * 1000 + idx)
+twin.ir_est = calibrated_ir(pid, row, ts)
+
+with st.sidebar:
+    st.divider()
+    st.metric("Estimated insulin resistance (twin)", f"{twin.ir_est:.2f}",
+              help=f"Fitted from the first {CAL_DAYS} days of CGM (summary statistics, different seeds from the data).")
 
 n_days = len(ts) // 288
 c1, c2 = st.columns([3, 1])
@@ -70,6 +85,7 @@ with left:
     ax.set_title(f"Live CGM + 2-hour forecast (now {fc.timestamp:%a %H:%M})", loc="left", fontsize=11)
     fig.tight_layout()
     st.pyplot(fig)
+    plt.close(fig)
 with right:
     color = RISK_COLOR[fc.risk_level]
     st.markdown(f"<div style='background:{color};color:white;padding:10px 16px;border-radius:10px;font-weight:700;"
@@ -86,12 +102,14 @@ with a:
     plot_drivers(ax, fc)
     fig.tight_layout()
     st.pyplot(fig)
+    plt.close(fig)
 with b:
     st.subheader("Wearable stream")
     fig, ax = plt.subplots(figsize=(5.2, 3))
     plot_vitals(ax, twin, now)
     fig.tight_layout()
     st.pyplot(fig)
+    plt.close(fig)
 
 st.divider()
 st.subheader("What-if simulator (counter-factual)")
@@ -112,4 +130,7 @@ fig, ax = plt.subplots(figsize=(10, 3))
 plot_whatif(ax, res, day=day)
 fig.tight_layout()
 st.pyplot(fig)
-st.caption("What-if runs the mechanistic layer of the twin with identical meals and noise, so differences are due only to the change.")
+plt.close(fig)
+st.caption(f"What-if runs the mechanistic layer of the twin with identical meals and noise, so differences are due only to the change. "
+           f"Insulin resistance ({res['ir_used']:.2f}) is estimated from the first {CAL_DAYS} days of CGM; walk habit, resting HR and meal "
+           f"timings are still the synthetic patient's true values. Simulation only, not clinical evidence.")

@@ -44,11 +44,13 @@ class Forecast:
 class VirtualPatient:
     """Digital twin of one patient."""
 
-    def __init__(self, ehr_row: pd.Series, series: pd.DataFrame, model: GlucoForecaster, sim_seed: int | None = None):
+    def __init__(self, ehr_row: pd.Series, series: pd.DataFrame, model: GlucoForecaster | None,
+                 sim_seed: int | None = None):
         self.ehr = ehr_row
         self.series = series.reset_index(drop=True)
         self.model = model
         self.sim_seed = sim_seed
+        self.ir_est: float | None = None          # set by calibrate_ir()
         self._feat = wearable_features(self.series)
         for k, v in ehr_vector(ehr_row).items():
             self._feat[k] = v
@@ -88,24 +90,65 @@ class VirtualPatient:
         out["alert"] = out["p"] >= self.model.threshold
         return out
 
+    # ------------------------------------------------------------------ calibration
+    def calibrate_ir(self, days: int = 5, grid=None, n_rep: int = 3) -> dict:
+        """
+        Estimate the latent insulin-resistance (IR) parameter from the first `days` of CGM.
+
+        * Candidate IR values are simulated with DIFFERENT meal/noise seeds than the observed data,
+          so recovery is not helped by shared randomness.
+        * Only summary statistics are matched (mean, sd, % time >180, mean daily peak), not raw traces.
+        * Other latent parameters (walk habit, resting HR, meal timings) are NOT estimated here.
+        """
+        grid = np.arange(0.3, 1.61, 0.05) if grid is None else np.asarray(grid, float)
+        n = days * BINS_PER_DAY
+        obs = self.series["glucose"].values[:n].astype(float)
+
+        def stats(g):
+            d = g.reshape(-1, BINS_PER_DAY)
+            return np.array([g.mean(), g.std(), (g > 180).mean() * 100, d.max(1).mean()])
+
+        tol = np.array([10.0, 10.0, 5.0, 15.0])
+        target = stats(obs)
+        losses = []
+        for ir in grid:
+            e = self.ehr.copy()
+            e["latent_ir"] = float(ir)
+            s = np.mean([stats(simulate_patient(e, days, 10_000 + r)[0]["glucose"].values.astype(float))
+                         for r in range(n_rep)], axis=0)
+            losses.append(float((((s - target) / tol) ** 2).sum()))
+        self.ir_est = float(grid[int(np.argmin(losses))])
+        return {"ir_est": self.ir_est, "ir_true": float(self.ehr["latent_ir"]), "loss": float(min(losses))}
+
+    def _sim_ehr(self, use_true_ir: bool = False) -> pd.Series:
+        """EHR row for the simulator: estimated IR if calibrated, else the true (hidden) one."""
+        e = self.ehr.copy()
+        if not use_true_ir and self.ir_est is not None:
+            e["latent_ir"] = self.ir_est
+        return e
+
     # ------------------------------------------------------------------ what-if
-    def what_if(self, interventions: dict, n_days: int | None = None) -> dict:
+    def what_if(self, interventions: dict, n_days: int | None = None, use_true_ir: bool = False) -> dict:
         """
         Counter-factual simulation: same meals, same noise, different behaviour.
-        (PoC note: the mechanistic layer re-uses the synthetic physiology engine, parameterised by the twin's
-        latent state. In a real deployment these parameters would be *estimated* from the patient's data.)
+
+        PoC note: IR is ESTIMATED if calibrate_ir() was called (otherwise the true latent value is used).
+        walk habit, resting HR and the meal/noise seed are still the synthetic patient's true values.
         """
         if self.sim_seed is None:
             raise ValueError("what_if requires the simulation seed of the synthetic patient")
         n_days = n_days or int(len(self.series) / BINS_PER_DAY)
-        base, _ = simulate_patient(self.ehr, n_days, self.sim_seed)
-        alt, _ = simulate_patient(self.ehr, n_days, self.sim_seed, interventions)
-        # skip first day (warm-up) when summarising
-        s = slice(BINS_PER_DAY, None)
+        e = self._sim_ehr(use_true_ir)
+        base, _ = simulate_patient(e, n_days, self.sim_seed)
+        alt, _ = simulate_patient(e, n_days, self.sim_seed, interventions)
+        s = slice(BINS_PER_DAY, None)       # skip first day (warm-up) when summarising
 
         def summ(d):
             g = d["glucose"].values[s]
-            return {"mean": float(g.mean()), "peak_daily_avg": float(pd.Series(g).groupby(np.arange(len(g)) // BINS_PER_DAY).max().mean()),
+            return {"mean": float(g.mean()),
+                    "peak_daily_avg": float(pd.Series(g).groupby(np.arange(len(g)) // BINS_PER_DAY).max().mean()),
                     "time_above_180_pct": float((g > 180).mean() * 100),
                     "time_in_range_pct": float(((g >= 70) & (g <= 180)).mean() * 100)}
-        return {"baseline": summ(base), "intervention": summ(alt), "baseline_series": base, "intervention_series": alt}
+        return {"baseline": summ(base), "intervention": summ(alt),
+                "baseline_series": base, "intervention_series": alt,
+                "ir_used": float(e["latent_ir"])}
