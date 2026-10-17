@@ -8,7 +8,7 @@
 |---|---|
 | Team name | Digital Twiner |
 | College / incubator | Birla Institute of Technology, Mesra |
-| Team leader | Rohan Kumar, rohankumar18181818@gmail.com, 9155554554 |
+| Team leader | Rohan Kumar, rohankumar18181818@gmail.com |
 | Members (1-4) | Subhrank Priya, B.Tech, Final Year |
 
 *(Folder / repo name format required by the organisers: `TeamName_CollegeName`, here `DigitalTwiner_BITMESRA`.)*
