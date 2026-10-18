@@ -67,7 +67,7 @@ Event prevalence among eligible forecast times is about 17%. On the primary spli
 * In this synthetic world, HRV, sleep and steps contribute little to the *forecast* (global importance about 0.001 to 0.006 AUROC) even though they drive the simulated physiology. The wearable signals mainly add explanatory context for the clinician. We report this as measured rather than claiming otherwise.
 * Because these labels come from our own simulator, **the synthetic metrics measure how well the pipeline learns a known process, not real-world clinical accuracy.**
 
-What-if example (patient `P0030`, same meals and noise, using the patient's true IR): a 15-minute walk after each main meal reduces time above 180 mg/dL from 12.9% to 6.1% and mean daily peak from 231 to 205 mg/dL. This comes from the mechanistic simulator's assumptions, not from clinical evidence. See 6.4 for how the result changes when IR is estimated from CGM instead.
+What-if example (patient `P0030`, same meals and noise, using the patient's true IR): a 15-minute walk after each main meal reduces time above 180 mg/dL from 12.9% to 6.1% and mean daily peak from 231 to 205 mg/dL. This comes from the mechanistic simulator's assumptions, not from clinical evidence. In the live dashboard, which uses IR estimated from CGM (0.70 for this patient), the same walk gives a 5.9 percentage-point reduction (to 4.4% time above 180), smaller than the 6.8 points with the true IR. See 6.4 for the calibration check.
 
 ### 6.2 Real-data validation (CGMacros v1.0.0, open access, PhysioNet)
 45 adults (15 healthy, 16 prediabetes, 14 T2D by HbA1c), about 10 days each, Dexcom G6 Pro glucose, 25,306 eligible forecast times, event prevalence 12.1%. Only CGM-derived and time-of-day features are used (HRV, sleep and steps do not exist in this dataset). Uncertainty is a 95% bootstrap confidence interval that resamples whole participants.
@@ -130,7 +130,7 @@ Effect on the what-if result (15-minute walk after main meals, first 5 patients,
 ## 7. How to run
 ```bash
 git clone https://github.com/subhrank09/DigitalTwiner_BITMESRA.git && cd DigitalTwiner_BITMESRA
-python -m venv .venv && source .venv/bin/activate        # Windows: .venv\Scripts\activate
+python3 -m venv .venv && source .venv/bin/activate       # Windows: python -m venv .venv, then .venv\Scripts\activate
 pip install -r requirements.txt
 
 python scripts/run_pipeline.py --quick     # ~1 min: small cohort, single split
@@ -162,6 +162,7 @@ See [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md). In short:
 * EHR fusion gave no gain with CGM history in simulation, a small cold-start gain (AUPRC 0.739 to 0.762, within one sd), and no gain on real data.
 * The what-if tool is a simulation, not a prescription. IR is estimated from CGM, but other latent parameters (walk habit, resting HR, meal timings, noise seed) are still the synthetic patient's true values, and calibration was only tested in simulation, where it is optimistic because the same simulator generates and fits the data.
 * Results depended on the CGM sensor (Dexcom vs Libre).
+* The event is defined for patients not already above 160 mg/dL. The dashboard also shows forecasts when glucose is already above 160, and those moments are outside the evaluation reported above.
 * Fixed 180 mg/dL threshold; alert fatigue risk (see 6.3); operating points were not chosen on separate data.
 * No regulatory clearance.
 
@@ -174,7 +175,7 @@ MIT, see [`LICENSE`](LICENSE). Third-party libraries keep their own licences (BS
 | Architecture diagram (PDF) | [`docs/architecture.pdf`](docs/architecture.pdf) |
 | Presentation (PPT + PDF) | [`docs/GlucoTwin_Presentation.pptx`](docs/GlucoTwin_Presentation.pptx), [`docs/GlucoTwin_Presentation.pdf`](docs/GlucoTwin_Presentation.pdf) |
 | Source code repository | https://github.com/subhrank09/DigitalTwiner_BITMESRA |
-| Demo video (≥ 20 min) | `https://youtu.be/-MHMH7Qbj7c` |
+| Demo video (≥ 20 min, 20:27) | [https://youtu.be/-MHMH7Qbj7c](https://youtu.be/-MHMH7Qbj7c) |
 
 ## 12. Repository layout
 ```
