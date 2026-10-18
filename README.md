@@ -174,7 +174,7 @@ MIT, see [`LICENSE`](LICENSE). Third-party libraries keep their own licences (BS
 | Architecture diagram (PDF) | [`docs/architecture.pdf`](docs/architecture.pdf) |
 | Presentation (PPT + PDF) | [`docs/GlucoTwin_Presentation.pptx`](docs/GlucoTwin_Presentation.pptx), [`docs/GlucoTwin_Presentation.pdf`](docs/GlucoTwin_Presentation.pdf) |
 | Source code repository | https://github.com/subhrank09/DigitalTwiner_BITMESRA |
-| Demo video (≥ 20 min) | `<UNLISTED YOUTUBE LINK>` (script: [`docs/VIDEO_SCRIPT.md`](docs/VIDEO_SCRIPT.md)) |
+| Demo video (≥ 20 min) | `https://youtu.be/-MHMH7Qbj7c` |
 
 ## 12. Repository layout
 ```
